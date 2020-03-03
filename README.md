@@ -1,125 +1,134 @@
-# Behavioral Cloning Project
+# **Behavioral Cloning** 
+
+March 2, 2020 - John Robinson
 
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
-Overview
+**Behavioral Cloning Project**
+
+**Project 4** in Udacity’s Self-Driving Car Nanodegree
+
 ---
-This repository contains starting files for the Behavioral Cloning Project.
 
-In this project, you will use what you've learned about deep neural networks and convolutional neural networks to clone driving behavior. You will train, validate and test a model using Keras. The model will output a steering angle to an autonomous vehicle.
+**Behavioral Cloning Project**
 
-We have provided a simulator where you can steer a car around a track for data collection. You'll use image data and steering angles to train a neural network and then use this model to drive the car autonomously around the track.
-
-We also want you to create a detailed writeup of the project. Check out the [writeup template](https://github.com/udacity/CarND-Behavioral-Cloning-P3/blob/master/writeup_template.md) for this project and use it as a starting point for creating your own writeup. The writeup can be either a markdown file or a pdf document.
-
-To meet specifications, the project will require submitting five files: 
-* model.py (script used to create and train the model)
-* drive.py (script to drive the car - feel free to modify this file)
-* model.h5 (a trained Keras model)
-* a report writeup file (either markdown or pdf)
-* video.mp4 (a video recording of your vehicle driving autonomously around the track for at least one full lap)
-
-This README file describes how to output the video in the "Details About Files In This Directory" section.
-
-Creating a Great Writeup
----
-A great writeup should include the [rubric points](https://review.udacity.com/#!/rubrics/432/view) as well as your description of how you addressed each point.  You should include a detailed description of the code used (with line-number references and code snippets where necessary), and links to other supporting documents or external references.  You should include images in your writeup to demonstrate how your code works with examples.  
-
-All that said, please be concise!  We're not looking for you to write a book here, just a brief description of how you passed each rubric point, and references to the relevant code :). 
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup.
-
-The Project
----
 The goals / steps of this project are the following:
-* Use the simulator to collect data of good driving behavior 
-* Design, train and validate a model that predicts a steering angle from image data
-* Use the model to drive the vehicle autonomously around the first track in the simulator. The vehicle should remain on the road for an entire loop around the track.
+* Use the simulator to collect data of good driving behavior
+* Build, a convolution neural network in Keras that predicts steering angles from images
+* Train and validate the model with a training and validation set
+* Test that the model successfully drives around track one without leaving the road
 * Summarize the results with a written report
 
-### Dependencies
-This lab requires:
+My Project Repository: https://github.com/johnrobinsn/CarND-Behavioral-Cloning-P3
 
-* [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit)
+Included with the submission:
+* model.py file used to create the models for this project.
+* drive.py script used to drive the simulator autonomously.
+* model.h5 model used to autonomously drive track 1.
+* video.mp4 demonstrating the model.h5 successfully navigating track 1.
+* model_track2.h5 model used to autonomously drive track 2.
+* video_track2.mp4 demonstrating model_track2.h5 successfully navigating track 2.
+* writeup report 
+* This document as a project writeup.
 
-The lab enviroment can be created with CarND Term1 Starter Kit. Click [here](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) for the details.
+---
+## Rubric Points
+### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/1968/view) individually and describe how I addressed each point in my implementation.  
 
-The following resources can be found in this github repository:
-* drive.py
-* video.py
-* writeup_template.md
+---
 
-The simulator can be downloaded from the classroom. In the classroom, we have also provided sample data that you can optionally use to help train your model.
+## Overview
 
-## Details About Files In This Directory
+This project was a bit of a revelation to me, even though I had read about similar results in the past.  It's truly amazing that given just camera images from a car along with steering measurements that you train a model to successfully and autonomously navigate a track as I was able to do.  
 
-### `drive.py`
-
-Usage of `drive.py` requires you have saved the trained model as an h5 file, i.e. `model.h5`. See the [Keras documentation](https://keras.io/getting-started/faq/#how-can-i-save-a-keras-model) for how to create this file using the following command:
-```sh
-model.save(filepath)
-```
-
-Once the model has been saved, it can be used with drive.py using this command:
-
+Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
 ```sh
 python drive.py model.h5
 ```
 
-The above command will load the trained model and use the model to make predictions on individual images in real-time and send the predicted angle back to the server via a websocket connection.
+The clone.py file contains the code for training and saving the convolutional neural network. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works.
 
-Note: There is known local system's setting issue with replacing "," with "." when using drive.py. When this happens it can make predicted steering values clipped to max/min values. If this occurs, a known fix for this is to add "export LANG=en_US.utf8" to the bashrc file.
+## Model Architecture
+The model architecture that I used was very close to the architecture that I used in the last project for traffic sign classification.  Which is loosely modeled on the LeNet architecture with a few small modifications.  The keras code that I used to create the model is shown in the following code block:
 
-#### Saving a video of the autonomous agent
-
-```sh
-python drive.py model.h5 run1
+```python
+# Create the model used for training
+model = Sequential()
+model.add(Lambda(lambda x: x/255.0-0.5, input_shape=(160,320,3))) # normalize the image data
+model.add(Cropping2D(cropping=((70,25), (0,0)))) # crop the top and bottom of the input images
+model.add(Convolution2D(6,5,5,activation='relu')) 
+model.add(MaxPooling2D())
+model.add(Convolution2D(6,5,5,activation='relu'))
+model.add(MaxPooling2D())
+model.add(Convolution2D(6,5,5,activation='relu'))
+model.add(MaxPooling2D())
+model.add(Dropout(0.75))
+model.add(Flatten())
+model.add(Dense(128))
+model.add(Dense(84))
+model.add(Dense(1))  # only need a single steering output
 ```
 
-The fourth argument, `run1`, is the directory in which to save the images seen by the agent. If the directory already exists, it'll be overwritten.
+The first layer of my network consists of a Lambda layer that is used to normalize the data by making it range from -0.5 to 0.5.  The input image size is 320x160.
 
-```sh
-ls run1
+The second layer (Cropping2D layer) of my network crops the top and bottom of the image in order to remove detail that is likely to confuse the network more than help it to learn to make appropriate steering decisions.
 
-[2017-01-09 16:10:23 EST]  12KiB 2017_01_09_21_10_23_424.jpg
-[2017-01-09 16:10:23 EST]  12KiB 2017_01_09_21_10_23_451.jpg
-[2017-01-09 16:10:23 EST]  12KiB 2017_01_09_21_10_23_477.jpg
-[2017-01-09 16:10:23 EST]  12KiB 2017_01_09_21_10_23_528.jpg
-[2017-01-09 16:10:23 EST]  12KiB 2017_01_09_21_10_23_573.jpg
-[2017-01-09 16:10:23 EST]  12KiB 2017_01_09_21_10_23_618.jpg
-[2017-01-09 16:10:23 EST]  12KiB 2017_01_09_21_10_23_697.jpg
-[2017-01-09 16:10:23 EST]  12KiB 2017_01_09_21_10_23_723.jpg
-[2017-01-09 16:10:23 EST]  12KiB 2017_01_09_21_10_23_749.jpg
-[2017-01-09 16:10:23 EST]  12KiB 2017_01_09_21_10_23_817.jpg
-...
+The next layer is the first of the convolutional layers with a 5x5 filter size and an output depth of 6.  This is followed up with a RELU activation and then a MaxPooling2D layer.
+
+I repeat this pattern of convolutional layers two more times.
+
+The next layer is a Dropout layer with a 75% keep probability in order to reduce the likelihood of over overfitting.
+
+The network is then flattened in order to finish with a number of fully connected (Dense) layers going from 128 outputs down to a single float output that will be the steering output of the network given the provided image at any given point in time.
+
+The training and validation loss were calculated using the mse (mean squared error) loss function and the ADAM optimizer (clone.py; line 106) was used.
+
+## Approach
+
+It was quite easy to get things set up so that you could see valiant attempts to steer the car.  But there were alot of areas on the track where the car would just go off the road and the car would tend to hug one side of the road.  One of the first things that I did was to take one of the suggestions to augment the data.  By flipping each of the images and negating the cooresponding steering measurement, I was able to increase the number of samples quite easily.  This definitely helped things and made the model less biased to drive on just one side of the road.
+
+As I added additional data to the training set, I switched to using keras's fit_generator and a python generator for feeding in the training and validation data during the training process.  I also switched to using the sklearn train_test_split function for carving out the validation set (20% of the training data).
+
+## Overfitting
+
+After I had settled on the current model architecture it was not hard to overfit on the training data.  The training loss would continue to fall with additional epochs, but the validation loss would hit a low point and then start increasing with additional epochs.  I added a Dropout layer with a 75% keep probability to try and address this overfitting, but that only helped slightly.  
+
+In the last project, it wasn't until I analyzed the training data and worked on improving it that I was able to make forward progress, so I decided to do the same here.  Looking at the captured training data, I noticed that much of the data was with very small steering angles effectively driving straight, but a minority of the data was with larger steering angles that likely indicate a steering correction needed to deal with curves or recover before going off the road.  In order to address this I decided to increase the number of samples that had larger steering measurement by using both the left and right camera images when the steering angle was above a given threshold.  When I used the left or right camera images, I applied a correction to the steering angle to compensate for the offset of the cameras.  This effectively tripled the number of samples that had large steering corrections while keeping the samples that represented driving with little correction stable.  The code used to do this can be found starting at line 25 in clone.py.  Also shown in the following code block:
+
+```python
+steering_center = float(line[3])
+
+# create adjusted steering measurements for the side camera images
+correction = 0.20 # this is a parameter to tune
+steering_left = steering_center + correction
+steering_right = steering_center - correction
+
+samples.append((img_center,steering_center,False)) # image_path, measurement, flip
+
+# if the steering angle exceeds a certain threshold use the views from the left and right
+# camera to train the model to accentuate the training signal.
+if abs(steering_center) > 0.33:
+    samples.append((img_left,steering_left,False))
+    samples.append((img_right,steering_right,False))
 ```
 
-The image file name is a timestamp of when the image was seen. This information is used by `video.py` to create a chronological video of the agent driving.
+With this one change I was able to successfully navigate the track.  Here are the steering angle distributions before and after augmentation:
 
-### `video.py`
+<img src="readme_resources/before_augmentation.png">
 
-```sh
-python video.py run1
-```
+<img src="readme_resources/after_augmentation.png">
 
-Creates a video based on images found in the `run1` directory. The name of the video will be the name of the directory followed by `'.mp4'`, so, in this case the video will be `run1.mp4`.
+The model for navigating track 1 can be found in the file, model.h5.  A video of this model successfully navigating track 1 can be found in the file, video.mp4.  Here is a link to the same video on youtube.
 
-Optionally, one can specify the FPS (frames per second) of the video:
+[Track 1](https://youtu.be/JXHE4aWdYcQ)
 
-```sh
-python video.py run1 --fps 48
-```
 
-Will run the video at 48 FPS. The default FPS is 60.
+## Track 2
+Track 2 was quite challenging.  Given the much more difficult track with many more curves, inclines and a center lane line, the model that I trained solely on track 1 data was not able to deal with this new environment.  So I set out to capture additional training data from track 2.  I had originaly wanted to try and capture training data that kept to the correct lane while navigating the track, but given my lack of skill at keyboard driving, I was unable to accomplish this feat. I resorted to driving track 2 straddling the center line. 
 
-#### Why create a video
+After successfully capturing the new training data, I tried to train a single model using both track 1 and track 2 data combined, but the center lane line on track 2 caused the model to learn to drive straddling a lane line.  This caused the model to drive on the side lane lines when used on track 1.  I decided at that point to just train a separate model for track 2 using just track 2 training data.  This worked well and the resulting model was able to navigate track 2 on the first attempt, which was quite exciting.  I decided to stop at this point.  But I am interested in experimenting with getting a single model that can generalize to both tracks in the future.  In order for this to happen I think I would need a way to get better training data that kept to a single lane line on track 2.
 
-1. It's been noted the simulator might perform differently based on the hardware. So if your model drives succesfully on your machine it might not on another machine (your reviewer). Saving a video is a solid backup in case this happens.
-2. You could slightly alter the code in `drive.py` and/or `video.py` to create a video of what your model sees after the image is processed (may be helpful for debugging).
+A separate model file, model_track2.h5 was created for driving track 2.  The video for track 2 can be found in the file, video_track2.mp4.  Here is a link to the same video on youtube.
 
-### Tips
-- Please keep in mind that training images are loaded in BGR colorspace using cv2 while drive.py load images in RGB to predict the steering angles.
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+[Track 2](https://youtu.be/lPizVGVKKeo)
 
